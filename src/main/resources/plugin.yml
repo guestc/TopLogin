@@ -1,0 +1,33 @@
+name: TopLogin
+main: cn.guestc.nukkit.login.TopLogin
+version: "1.0.0"
+api: ["1.0.5"]
+load: POSTWORLD
+author: Guestc
+description: "a simple Login for NukkitX"
+
+
+commands:
+  login:
+    description: "login Command"
+    usage: "/login [Passwd]"
+    permission: toplogin.cmd.login
+  passwd:
+    description: "change passwd command"
+    usage: "/passwd [new passwd]"
+    permission: toplogin.cmd.passwd
+  setpasswd:
+    description: "change the user passwd for Op"
+    usage: "/setpasswd [user] [new passwd]"
+    permission: toplogin.cmd.setpasswd
+
+permissions:
+  toplogin.cmd.login:
+    description: "allows the user login in server"
+    default: true
+  toplogin.cmd.passwd:
+    description: "allows the user passwd in server"
+    default: true
+  toplogin.cmd.setpasswd:
+    description: "allows the Op set user's passwd in server"
+    default: false

@@ -1,0 +1,59 @@
+# mysql or yaml
+storage-type: yaml
+#########Mysql#############
+mysql-src: "127.0.0.1"
+mysql-user: "root"
+mysql-passwd: "123456789"
+mysql-database: "toplogin"
+###########################
+
+#language file default language_chs.yml
+language: "language_chs.yml"
+
+###########User#############
+#passwd min lenght
+passwd-min: 8
+
+#passwd max lenght
+passwd-max: 16
+
+#username min lenght
+username-min: 3
+
+#username max lenght
+username-max: 16
+
+#unlogin can move
+unlogin-move: false
+
+#unlogin ban message
+unlogin-message: false
+
+#unlogin craft
+unlogin-craft: false
+
+unlogin-break: false
+
+unlogin-place: false
+
+unlogin-interact: false
+
+unlogin-pickitem: false
+
+unlogin-dropitem: false
+
+unlogin-chat: false
+
+#message type
+#1=chat
+#3=popup
+#4=tip
+message-type: 1
+
+#ban username
+ban-username:
+  - "steve"
+  - "steven"
+##############################
+
+
