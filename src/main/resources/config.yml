@@ -26,6 +26,16 @@ username-max: 16
 #unlogin can move
 unlogin-move: true
 
+#login type
+#	command  * use /login [passwd]
+#	text	*just type passwd then enter
+login-type: text
+
+#autologin in 2 hours
+autologin: true
+
+autologin-valid-hours: 2
+
 #unlogin ban message
 unlogin-message: false
 
@@ -42,7 +52,6 @@ unlogin-pickitem: false
 
 unlogin-dropitem: false
 
-unlogin-chat: false
 
 #message type
 #1=chat

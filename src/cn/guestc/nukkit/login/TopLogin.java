@@ -10,6 +10,9 @@ import cn.nukkit.plugin.PluginBase;
 import cn.guestc.nukkit.login.Config.*;
 import cn.nukkit.utils.Config;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.*;
@@ -62,30 +65,14 @@ public class TopLogin extends PluginBase {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         switch(cmd.getName()){
-            case "login":
-                if(!(sender instanceof Player)){
-                    sender.sendMessage(api.getMessage("login-in-not-player"));
-                    return true;
-                }
-                Player player = (Player) sender;
-                if(!dataHelper.IsRegister(player.getName())){
-                    api.Message(player,api.getMessage("login-in-not-registered"));
-                    return true;
-                }
-                String passwd = TopLoginAPI.getPasswdFormStr(TopLoginAPI.ArrayToString(args));
-                if(!dataHelper.VerifyPasswd(player.getName(),passwd)){
-                    api.Message(player,api.getMessage("login-in-wrong-passwd"));
-                    api.Message(player,api.getMessage("login-in-message"));
-                    return true;
-                }
-                api.Message(player,api.getMessage("login-in-success"));
-                api.LoginIn(player.getName());
-                break;
-
-
             case "passwd":
                 if(!(sender instanceof Player)){
                     sender.sendMessage(api.getMessage("login-in-not-player"));
+                    return true;
+                }
+                if(args.length == 0){
+                    sender.sendMessage(api.getMessage("wrong-format"));
+                    sender.sendMessage(cmd.getUsage());
                     return true;
                 }
                 String newpasswd = TopLoginAPI.getPasswdFormStr(TopLoginAPI.ArrayToString(args));
@@ -102,22 +89,45 @@ public class TopLogin extends PluginBase {
             case "setpasswd":
                 if(!(sender instanceof ConsoleCommandSender)){
                     sender.sendMessage(api.getMessage("setpasswd-not-console"));
+                    getLogger().warning("not");
                     return true;
                 }
                 if(args.length < 2){
-                    sender.sendMessage(api.getMessage("setpasswd-format-wrong"));
+                    sender.sendMessage(api.getMessage("wrong-format"));
                     sender.sendMessage(cmd.getUsage());
+                    getLogger().warning("<2");
                     return true;
                 }
                 String user = args[0];
-                String setpasswd = TopLoginAPI.ArrayToString(args).substring(0,user.length());
+                String setpasswd = TopLoginAPI.ArrayToString(args).substring(user.length());
                 String cmsg = api.CheckPasswd(setpasswd);
-                if(cmsg == null){
+                if(cmsg != null){
                     sender.sendMessage(cmsg);
+                    getLogger().warning("cmsg "+cmsg);
                     return true;
                 }
+                getLogger().warning("success");
                 dataHelper.SetPasswd(user,TopLoginAPI.getPasswdFormStr(setpasswd));
                 sender.sendMessage(String.format(api.getMessage("setpasswd-success"),user,setpasswd));
+                getLogger().warning(setpasswd);
+                break;
+
+            case "setmail":
+                if(!(sender instanceof Player)){
+                    sender.sendMessage(api.getMessage("login-in-not-player"));
+                    return true;
+                }
+                if(args.length == 0){
+                    sender.sendMessage(api.getMessage("wrong-format"));
+                    sender.sendMessage(cmd.getUsage());
+                    return true;
+                }
+                if(!TopLoginAPI.isMail(args[0])){
+                    sender.sendMessage(api.getMessage("reg-mail-wrong"));
+                    return true;
+                }
+                dataHelper.SetMail(sender.getName(),args[0]);
+                sender.sendMessage(String.format(api.getMessage("change-mail-success"),args[0]));
                 break;
         }
         return true;

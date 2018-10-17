@@ -61,7 +61,7 @@ public class YamlConfig extends DataHelper {
     public void LoginOut(String user) {
         Config pconfig = getUserConfig(user);
         pconfig.set("last-time",TopLoginAPI.getTime());
-        pconfig.save(true);
+        pconfig.save();
     }
 
     @Override

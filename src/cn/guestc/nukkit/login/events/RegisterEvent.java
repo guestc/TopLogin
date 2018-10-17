@@ -4,6 +4,7 @@ import cn.guestc.nukkit.login.TopLogin;
 import cn.guestc.nukkit.login.TopLoginAPI;
 import cn.guestc.nukkit.login.utils.UserData;
 import cn.nukkit.Player;
+import cn.nukkit.api.API;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
@@ -40,7 +41,7 @@ public class RegisterEvent implements Listener {
         if(!plugin.dataHelper.IsRegister(name)){
             API.Message(player,API.getMessage("reg-comfirm-name"));
         }else{
-            API.Message(player,API.getMessage("login-in-message"));
+            API.AutoLogin(event.getPlayer());
         }
     }
 
@@ -56,20 +57,44 @@ public class RegisterEvent implements Listener {
             reging.remove(name);
         }
     }
+    @EventHandler(priority=EventPriority.HIGH,ignoreCancelled=false)
+    public void onCommandPre(PlayerCommandPreprocessEvent event){
+        Player player = event.getPlayer();
+        String name = player.getName();
+        if(!API.isLogin(name)){
+            if(API.cdata.LoginType.equals("command")){
+                if(!registers.containsKey(name) && plugin.dataHelper.IsRegister(name)){
+                    String msg = event.getMessage();
+                    if(msg.substring(0,"/login ".length()).equals("/login ")){
+                        String passwd = TopLoginAPI.getPasswdFormStr(msg.replace("/login ",""));
+                        if(plugin.dataHelper.VerifyPasswd(player.getName(),passwd)){
+                            API.Message(player,API.getMessage("login-in-success"));
+                            API.LoginIn(player.getName());
+                        }else{
+                            API.Message(player,API.getMessage("login-in-wrong-passwd"));
+                            API.Message(player,API.getMessage("login-in-message"));
+                        }
+                    }
+                }
+            }
+            event.setCancelled(true);
+        }
+
+    }
 
     @EventHandler(priority=EventPriority.HIGH,ignoreCancelled=false)
     public void onChat(PlayerChatEvent event){
         Player player = event.getPlayer();
         String name = player.getName();
+        String msg = event.getMessage();
         if(registers.containsKey(name)){
-            String msg = event.getMessage();
-            event.setCancelled(true);
             switch(registers.get(name)){
                 case confirmName:
                     if(msg.toLowerCase().equals(name.toLowerCase())){
                         registers.put(name,RegisterState.Passwd);
                         API.Message(player,API.getMessage("reg-passwd"));
                         reging.put(name,new UserData());
+                        event.setCancelled(true);
                         return;
                     }
                     API.Message(player,API.getMessage("reg-comfirm-name-wrong"));
@@ -78,6 +103,7 @@ public class RegisterEvent implements Listener {
                     if(!TopLoginAPI.isMail(msg)){
                         API.Message(player,API.getMessage("reg-mail-wrong"));
                         API.Message(player,API.getMessage("reg-mail"));
+                        event.setCancelled(true);
                         return;
                     }
                     UserData ud1 = reging.get(name);
@@ -94,6 +120,7 @@ public class RegisterEvent implements Listener {
                     if(remsg != null){
                         API.Message(player,remsg);
                         API.Message(player,API.getMessage("reg-comfirm-name-wrong"));
+                        event.setCancelled(true);
                         return;
                     }
                     API.Message(player,API.getMessage("reg-passwd-comfirm"));
@@ -107,21 +134,28 @@ public class RegisterEvent implements Listener {
                     if(!reging.get(name).passwd.equals(msg)){
                         API.Message(player,API.getMessage("reg-passwd-comfirm-not"));
                         API.Message(player,API.getMessage("reg-passwd-comfirm"));
+                        event.setCancelled(true);
                         return;
                     }
                     API.Message(player,API.getMessage("reg-mail"));
                     registers.put(name,RegisterState.Mail);
                     break;
-                default:
-
-                    break;
             }
+            event.setCancelled(true);
         }else{
-                if(!API.cdata.UnloginChat){
-                    if(!API.isLogin(name)){
-                        event.setCancelled(true);
+            if(!API.isLogin(name)){
+                if(API.cdata.LoginType.equals("text")){
+                    if(plugin.dataHelper.VerifyPasswd(name,TopLoginAPI.getPasswdFormStr(msg))){
+                        API.LoginIn(name);
+                        API.Message(player,API.getMessage("login-in-success"));
+                    }else{
+                        API.Message(player,API.getMessage("login-in-wrong-passwd"));
+                        API.Message(player,API.getMessage("login-in-message"));
                     }
                 }
+                event.setCancelled(true);
+            }
+
         }
 
 
@@ -148,11 +182,6 @@ public class RegisterEvent implements Listener {
                     return;
                 }
                 registers.put(name,RegisterState.confirmName);
-            }else{
-                /*
-                autologin
-                 */
-                API.AutoLogin(event.getPlayer());
             }
         }
     }

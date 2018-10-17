@@ -13,9 +13,9 @@ public class ConfigData {
     public boolean UnloginInteract = false;
     public boolean UnloginPickItem = false;
     public boolean UnloginDropItem = false;
-    public boolean UnloginChat = false;
     public boolean AutoLogin = true;
     public int AutoLoginValidHours = 2;
     public byte MessageType = 1;
+    public String LoginType = "text";
 
 }

@@ -17,17 +17,24 @@ commands:
     usage: "/passwd [new passwd]"
     permission: toplogin.cmd.passwd
   setpasswd:
-    description: "change the user passwd for Op"
+    description: "change the user passwd"
     usage: "/setpasswd [user] [new passwd]"
     permission: toplogin.cmd.setpasswd
+  setmail:
+    description: "change mail command"
+    usage: "/setmail [mail]"
+    permission: toplogin.cmd.setmail
 
 permissions:
   toplogin.cmd.login:
     description: "allows the user login in server"
     default: true
   toplogin.cmd.passwd:
-    description: "allows the user passwd in server"
+    description: "allows the user change passwd in server"
     default: true
   toplogin.cmd.setpasswd:
     description: "allows the Op set user's passwd in server"
-    default: false
+    default: op
+  toplogin.cmd.setmail:
+    description: "allows the user change mail in server"
+    default: true

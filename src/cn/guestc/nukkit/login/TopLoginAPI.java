@@ -54,9 +54,9 @@ public class TopLoginAPI {
         cdata.UnloginInteract = Boolean.parseBoolean(plugin.pconfig.get("unlogin-interact").toString());
         cdata.UnloginDropItem = Boolean.parseBoolean(plugin.pconfig.get("unlogin-dropitem").toString());
         cdata.UnloginPickItem = Boolean.parseBoolean(plugin.pconfig.get("unlogin-pickitem").toString());
-        cdata.UnloginChat = Boolean.parseBoolean(plugin.pconfig.get("unlogin-chat").toString());
         cdata.AutoLogin = Boolean.parseBoolean(plugin.pconfig.get("autologin").toString());
-        cdata.AutoLoginValidHours = Integer.parseInt(plugin.pconfig.get("autologin").toString());
+        cdata.AutoLoginValidHours = Integer.parseInt(plugin.pconfig.get("autologin-valid-hours").toString());
+        cdata.LoginType = plugin.pconfig.get("login-type").toString();
     }
 
     public String getMysqlConnectStr(Config conf){
@@ -70,18 +70,19 @@ public class TopLoginAPI {
     }
 
     public static String getTime(){
-        SimpleDateFormat sd = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+        SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return sd.format(new Date());
     }
 
     public static Date getTime(String date) throws ParseException {
-        SimpleDateFormat sd = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+        SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return sd.parse(date);
     }
 
     public void LoginIn(String user){
         if(!loginusers.contains(user)){
             loginusers.add(user);
+            plugin.getLogger().info(String.format(getMessage("user-login-message"),user,getNameFromIp(plugin.getServer().getPlayer(user).getAddress())));
         }
     }
 
@@ -101,9 +102,11 @@ public class TopLoginAPI {
                 if((ntime.getTime() - ltime.getTime()) <= (1000*60*60* cdata.AutoLoginValidHours)){
                     Message(player,String.format(getMessage("autologin"),cdata.AutoLoginValidHours));
                     LoginIn(user);
+                    return;
                 }
             }
         }
+        Message(player,getMessage("login-in-message"));
     }
 
     public boolean isLogin(String user){
@@ -183,6 +186,11 @@ public class TopLoginAPI {
             remsg = getMessage("reg-passwd-min-lenght");
         }
         return remsg;
+    }
+
+    public static String getNameFromIp(String ip){
+        //todo
+        return ip;
     }
 
 
