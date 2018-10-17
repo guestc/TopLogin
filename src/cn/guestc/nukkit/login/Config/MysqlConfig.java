@@ -1,5 +1,7 @@
 package cn.guestc.nukkit.login.Config;
 
+import java.util.Date;
+
 public class MysqlConfig extends DataHelper{
 
     @Override
@@ -36,5 +38,10 @@ public class MysqlConfig extends DataHelper{
     @Override
     public boolean IsRegister(String user) {
         return false;
+    }
+
+    @Override
+    public Date getLastTime(String user) {
+        return null;
     }
 }

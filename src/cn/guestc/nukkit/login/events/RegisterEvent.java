@@ -9,6 +9,7 @@ import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.player.*;
 
+import java.util.Date;
 import java.util.HashMap;
 
 public class RegisterEvent implements Listener {
@@ -83,7 +84,7 @@ public class RegisterEvent implements Listener {
                     String passwd = TopLoginAPI.getPasswdFormStr(ud1.passwd);
                     plugin.dataHelper.AddUser(name,passwd,msg);
                     API.Message(player,API.getMessage("reg-success"));
-                    API.Message(player, String.format(API.getMessage("reg-success"),name,ud1.passwd,msg));
+                    API.Message(player, String.format(API.getMessage("reg-success-return-msg"),name,ud1.passwd,msg));
                     API.LoginIn(name);
                     reging.remove(name);
                     registers.remove(name);
@@ -147,6 +148,11 @@ public class RegisterEvent implements Listener {
                     return;
                 }
                 registers.put(name,RegisterState.confirmName);
+            }else{
+                /*
+                autologin
+                 */
+                API.AutoLogin(event.getPlayer());
             }
         }
     }

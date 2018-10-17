@@ -4,6 +4,8 @@ import cn.guestc.nukkit.login.utils.ConfigData;
 import cn.nukkit.Player;
 import cn.nukkit.network.protocol.TextPacket;
 import cn.nukkit.utils.Config;
+
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -53,6 +55,8 @@ public class TopLoginAPI {
         cdata.UnloginDropItem = Boolean.parseBoolean(plugin.pconfig.get("unlogin-dropitem").toString());
         cdata.UnloginPickItem = Boolean.parseBoolean(plugin.pconfig.get("unlogin-pickitem").toString());
         cdata.UnloginChat = Boolean.parseBoolean(plugin.pconfig.get("unlogin-chat").toString());
+        cdata.AutoLogin = Boolean.parseBoolean(plugin.pconfig.get("autologin").toString());
+        cdata.AutoLoginValidHours = Integer.parseInt(plugin.pconfig.get("autologin").toString());
     }
 
     public String getMysqlConnectStr(Config conf){
@@ -70,6 +74,11 @@ public class TopLoginAPI {
         return sd.format(new Date());
     }
 
+    public static Date getTime(String date) throws ParseException {
+        SimpleDateFormat sd = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+        return sd.parse(date);
+    }
+
     public void LoginIn(String user){
         if(!loginusers.contains(user)){
             loginusers.add(user);
@@ -79,6 +88,21 @@ public class TopLoginAPI {
     public void LoginOut(String user){
         if(loginusers.contains(user)){
             loginusers.remove(user);
+            plugin.dataHelper.LoginOut(user);
+        }
+    }
+
+    public void AutoLogin(Player player){
+        String user = player.getName();
+        if(cdata.AutoLogin){
+            Date ltime = plugin.dataHelper.getLastTime(user);
+            if(ltime != null){
+                Date ntime = new Date();
+                if((ntime.getTime() - ltime.getTime()) <= (1000*60*60* cdata.AutoLoginValidHours)){
+                    Message(player,String.format(getMessage("autologin"),cdata.AutoLoginValidHours));
+                    LoginIn(user);
+                }
+            }
         }
     }
 

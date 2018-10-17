@@ -24,7 +24,7 @@ username-min: 3
 username-max: 16
 
 #unlogin can move
-unlogin-move: false
+unlogin-move: true
 
 #unlogin ban message
 unlogin-message: false

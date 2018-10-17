@@ -4,6 +4,8 @@ import cn.guestc.nukkit.login.TopLoginAPI;
 import cn.nukkit.utils.Config;
 
 import java.io.*;
+import java.text.ParseException;
+import java.util.Date;
 
 
 public class YamlConfig extends DataHelper {
@@ -17,8 +19,8 @@ public class YamlConfig extends DataHelper {
         //connectstr is data dir   ./TopLogin/user/
         File root = new File(connectStr);
         if(!root.exists())  root.mkdir();
-        String[] dirs = {"q","w","e","r","t","y","u","i","o","p","a","s","d","f","g","h","j","k","l","z","x","c","v","b","n","m","1","2","3","4","5","6","7","8","9","0","_"};
-        for (String dir : dirs) {
+        char[] dirs = "1234567890_qwertyuiopasdfghjklzxcvbnm".toCharArray();
+        for (char dir : dirs) {
             File f = new File(connectStr+"//"+dir+"//");
             if(!f.exists())  f.mkdir();
         }
@@ -58,7 +60,7 @@ public class YamlConfig extends DataHelper {
     @Override
     public void LoginOut(String user) {
         Config pconfig = getUserConfig(user);
-        pconfig.set("loginout",TopLoginAPI.getTime());
+        pconfig.set("last-time",TopLoginAPI.getTime());
         pconfig.save(true);
     }
 
@@ -70,5 +72,18 @@ public class YamlConfig extends DataHelper {
             return pconfig.exists("passwd");
         }
         return false;
+    }
+
+    @Override
+    public Date getLastTime(String user) {
+        Config pconfig = getUserConfig(user);
+        if(pconfig.exists("last-time")){
+            try{
+                return TopLoginAPI.getTime(pconfig.get("last-time").toString());
+            }catch(ParseException e){
+                return null;
+            }
+        }
+        return null;
     }
 }

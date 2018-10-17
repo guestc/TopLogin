@@ -1,5 +1,7 @@
 package cn.guestc.nukkit.login.Config;
 
+import java.util.Date;
+
 public abstract class DataHelper {
 
     public String connectStr;
@@ -19,5 +21,7 @@ public abstract class DataHelper {
     abstract public void LoginOut(String user);
 
     abstract public boolean IsRegister(String user);
+
+    abstract public Date getLastTime(String user);
 
 }
