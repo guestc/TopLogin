@@ -1,13 +1,20 @@
 # TopLogin
+
+
 **A simple login for Nukkit.**
 **Support **`Mysql` **And** `Yaml`
+
 ##Commands
+
+
 - **/login [passwd]** : **Login in server**
 - **/passwd [new passwd]** : **Change player passwd**
 - **/setpasswd [player] [new passswd]** : **Set player passwd in Console**
 - **/setmail [mail]** : **Set player mail**
 
 ##RegisterSteps
+
+
 - **Type your ** `Name`
 - **Type your ** `Passwd`
 - **Comfirm your ** `Passwd`
@@ -15,6 +22,8 @@
 - **Register success!**
 
 ##Config
+
+
 | Key  | Type | Default | Description |
 | :------ | :--: | :----: | :-------------- |
 |storage-type | string | yaml | Choose `mysql` or `yaml`|
