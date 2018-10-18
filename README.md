@@ -42,7 +42,7 @@
 |passwd-max | int | 16 | passwd max lenght |
 |username-min | int | 3 | player name min lenght |
 |username-max | int | 16 | player name max lenght |
-|login-type | string | command |  `command` : `/login [passwd]` **OR** `text` : `[passwd]` enter in chat|
+|login-type | string | command |  `command` : `/login [passwd]` **or** `text` : `[passwd]` enter in chat|
 |autologin | bool | true | Enable autologin |
 |autologin-valid-hours | int | 2 | Set autologin in 2 hours |
 |unlogin-message | bool | false | can receive message except TopLogin Plugin Message without login |
