@@ -40,3 +40,5 @@
 |unlogin-move | bool | true | can move without login |
 |message-type | int | 1 | PluginMessageType `1=chat` `3=popup` `4=tip` |
 |ban-username | array | ["steve","steve*"] | can't register username `*`=`\w` |
+
+
