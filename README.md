@@ -5,7 +5,7 @@
 **Support **`Mysql` **And** `Yaml`
 
 
-##Commands
+## Commands
 
 
 - **/login [passwd]** : **Login in server**
@@ -14,7 +14,7 @@
 - **/setmail [mail]** : **Set player mail**
 
 
-##RegisterSteps
+## RegisterSteps
 
 
 - **Type your ** `Name`
@@ -24,7 +24,7 @@
 - **Register success!**
 
 
-##Config
+## Config
 
 
 | Key  | Type | Default | Description |
