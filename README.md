@@ -1,20 +1,34 @@
 # TopLogin
+
+
 **A simple login for Nukkit.**
-**Support ** **`Mysql`** **And** **`Yaml`**
-##Commands
+
+
+**Support** `Mysql` **And** `Yaml`
+
+
+## Commands
+
+
 - **/login [passwd]** : **Login in server**
 - **/passwd [new passwd]** : **Change player passwd**
 - **/setpasswd [player] [new passswd]** : **Set player passwd in Console**
 - **/setmail [mail]** : **Set player mail**
 
-##RegisterSteps
-- **Type your ** **`Name`**
-- **Type your ** **`Passwd`**
-- **Comfirm your ** **`Passwd`**
-- **Type your ** **`Mail`**
+
+## RegisterSteps
+
+
+- **Type your** `Name`
+- **Type your** `Passwd`
+- **Comfirm your** `Passwd`
+- **Type your** `Mail`
 - **Register success!**
 
-##Config
+
+## Config
+
+
 | Key  | Type | Default | Description |
 | :------ | :--: | :----: | :-------------- |
 |storage-type | string | yaml | Choose `mysql` or `yaml`|
@@ -28,7 +42,7 @@
 |passwd-max | int | 16 | passwd max lenght |
 |username-min | int | 3 | player name min lenght |
 |username-max | int | 16 | player name max lenght |
-|login-type | string | command | - `command` : `/login [passwd]`  **`OR`** `text` : `[passwd]` enter in chat|
+|login-type | string | command |  `command` : `/login [passwd]` **or** `text` : `[passwd]` enter in chat|
 |autologin | bool | true | Enable autologin |
 |autologin-valid-hours | int | 2 | Set autologin in 2 hours |
 |unlogin-message | bool | false | can receive message except TopLogin Plugin Message without login |
@@ -39,6 +53,4 @@
 |unlogin-drop | bool | false | can drop item without login |
 |unlogin-move | bool | true | can move without login |
 |message-type | int | 1 | PluginMessageType `1=chat` `3=popup` `4=tip` |
-|ban-username | array | ["steve","steve*"] | can't register username `*`=`\w` |
-
-
+|ban-username | array | ["steve","^steve\\\w*$"] | can't register username support Regex |
