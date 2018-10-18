@@ -4,6 +4,7 @@
 **A simple login for Nukkit.**
 **Support **`Mysql` **And** `Yaml`
 
+
 ##Commands
 
 
@@ -11,6 +12,7 @@
 - **/passwd [new passwd]** : **Change player passwd**
 - **/setpasswd [player] [new passswd]** : **Set player passwd in Console**
 - **/setmail [mail]** : **Set player mail**
+
 
 ##RegisterSteps
 
@@ -20,6 +22,7 @@
 - **Comfirm your ** `Passwd`
 - **Type your ** `Mail`
 - **Register success!**
+
 
 ##Config
 
