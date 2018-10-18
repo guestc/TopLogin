@@ -53,4 +53,4 @@
 |unlogin-drop | bool | false | can drop item without login |
 |unlogin-move | bool | true | can move without login |
 |message-type | int | 1 | PluginMessageType `1=chat` `3=popup` `4=tip` |
-|ban-username | array | ["steve","^steve\\w*$"] | can't register username support Regex |
+|ban-username | array | ["steve","^steve\\\w*$"] | can't register username support Regex |
