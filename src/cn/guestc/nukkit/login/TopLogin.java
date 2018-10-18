@@ -32,6 +32,7 @@ public class TopLogin extends PluginBase {
         getServer().getPluginManager().registerEvents(new RegisterEvent(this),this);
         getServer().getPluginManager().registerEvents(new LoginEvent(this),this);
         api.init();
+        getLogger().warning("is register "+dataHelper.IsRegister("fucK2"));
     }
 
     @Override
@@ -47,13 +48,17 @@ public class TopLogin extends PluginBase {
         saveResource("language_chs.yml",false);
         reloadConfig();
         pconfig = getConfig();
-        if(pconfig.get("storage-type") == "mysql"){
+        if(pconfig.get("storage-type").toString().equals("mysql")){
             dataHelper = new MysqlConfig();
-            dataHelper.connectStr = api.getMysqlConnectStr(pconfig);
+            dataHelper.DB_url = String.format("jdbc:mysql://%1$s:3306/%2$s",pconfig.get("mysql-src").toString(),pconfig.get("mysql-database").toString());
+            dataHelper.DB_passwd = pconfig.get("mysql-passwd").toString();
+            dataHelper.DB_prefix = pconfig.get("mysql-table-prefix").toString();
+            dataHelper.DB_user = pconfig.get("mysql-user").toString();
         }else{
             dataHelper = new YamlConfig();
-            dataHelper.connectStr = getDataFolder().getAbsolutePath()+"//user//";
+            dataHelper.DataDir = getDataFolder().getAbsolutePath()+"//user//";
         }
+        dataHelper.plugin = this;
         dataHelper.init();
     }
 

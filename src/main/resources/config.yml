@@ -4,6 +4,7 @@ storage-type: yaml
 mysql-src: "127.0.0.1"
 mysql-user: "root"
 mysql-passwd: "123456789"
+mysql-table-prefix: "mc_login"
 mysql-database: "toplogin"
 ###########################
 
@@ -62,7 +63,7 @@ message-type: 1
 #ban username
 ban-username:
   - "steve"
-  - "steven"
+  - "^guestc\\w*$"
 ##############################
 
 

@@ -1,6 +1,7 @@
 package cn.guestc.nukkit.login.Config;
 
 import cn.guestc.nukkit.login.TopLoginAPI;
+import cn.nukkit.Player;
 import cn.nukkit.utils.Config;
 
 import java.io.*;
@@ -10,18 +11,19 @@ import java.util.Date;
 
 public class YamlConfig extends DataHelper {
 
+
     public Config  getUserConfig(String user){
-        String dir = connectStr+"//"+user.substring(0,1).toLowerCase();
+        String dir = DataDir+"//"+user.substring(0,1).toLowerCase();
         return new Config(dir+"//"+user.toLowerCase()+".yml",Config.YAML);
     }
     @Override
     public void init(){
         //connectstr is data dir   ./TopLogin/user/
-        File root = new File(connectStr);
+        File root = new File(DataDir);
         if(!root.exists())  root.mkdir();
         char[] dirs = "1234567890_qwertyuiopasdfghjklzxcvbnm".toCharArray();
         for (char dir : dirs) {
-            File f = new File(connectStr+"//"+dir+"//");
+            File f = new File(DataDir+"//"+dir+"//");
             if(!f.exists())  f.mkdir();
         }
     }
@@ -58,15 +60,15 @@ public class YamlConfig extends DataHelper {
     }
 
     @Override
-    public void LoginOut(String user) {
-        Config pconfig = getUserConfig(user);
+    public void LoginOut(Player player) {
+        Config pconfig = getUserConfig(player.getName());
         pconfig.set("last-time",TopLoginAPI.getTime());
         pconfig.save();
     }
 
     @Override
     public boolean IsRegister(String user) {
-        File f = new File(connectStr+"//"+user.substring(0,1).toLowerCase()+"//"+user.toLowerCase()+".yml");
+        File f = new File(DataDir+"//"+user.substring(0,1).toLowerCase()+"//"+user.toLowerCase()+".yml");
         if(f.exists()){
             Config pconfig = getUserConfig(user);
             return pconfig.exists("passwd");

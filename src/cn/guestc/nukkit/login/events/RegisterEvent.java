@@ -49,7 +49,7 @@ public class RegisterEvent implements Listener {
     public void onQuit(PlayerQuitEvent event){
         Player player = event.getPlayer();
         String name = player.getName();
-        API.LoginOut(name);
+        API.LoginOut(player);
         if(registers.containsKey(name)){
             registers.remove(name);
         }
@@ -155,10 +155,7 @@ public class RegisterEvent implements Listener {
                 }
                 event.setCancelled(true);
             }
-
         }
-
-
     }
 
     @EventHandler(priority=EventPriority.LOWEST,ignoreCancelled=false)
@@ -168,7 +165,7 @@ public class RegisterEvent implements Listener {
             if(!plugin.dataHelper.IsRegister(name)){
                 String msg = null;
                 if(API.isBanReg(name)){
-                    msg = API.getMessage("reg-comfirm-name-error");
+                    msg = API.getMessage("reg-comfirm-name-banned");
                 }
                 if(name.length() > API.cdata.UserMaxLen){
                     msg = API.getMessage("reg-comfirm-name-max-lenght");

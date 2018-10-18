@@ -86,10 +86,11 @@ public class TopLoginAPI {
         }
     }
 
-    public void LoginOut(String user){
-        if(loginusers.contains(user)){
-            loginusers.remove(user);
-            plugin.dataHelper.LoginOut(user);
+    public void LoginOut(Player player){
+        String name = player.getName();
+        if(loginusers.contains(name)){
+            loginusers.remove(name);
+            plugin.dataHelper.LoginOut(player);
         }
     }
 
@@ -161,7 +162,11 @@ public class TopLoginAPI {
     }
 
     public boolean isBanReg(String user){
-        return banusers.contains(user.toLowerCase());
+        if(banusers.contains(user.toLowerCase()))return true;
+        for (String u:banusers) {
+            if(Pattern.matches(u,user))return true;
+        }
+        return false;
     }
 
     public static boolean isMail(String str){
