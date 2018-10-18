@@ -2,7 +2,9 @@
 
 
 **A simple login for Nukkit.**
-**Support **`Mysql` **And** `Yaml`
+
+
+**Support** `Mysql` **And** `Yaml`
 
 
 ## Commands
@@ -17,10 +19,10 @@
 ## RegisterSteps
 
 
-- **Type your ** `Name`
-- **Type your ** `Passwd`
-- **Comfirm your ** `Passwd`
-- **Type your ** `Mail`
+- **Type your** `Name`
+- **Type your** `Passwd`
+- **Comfirm your** `Passwd`
+- **Type your** `Mail`
 - **Register success!**
 
 
