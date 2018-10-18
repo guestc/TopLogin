@@ -1,6 +1,6 @@
 # TopLogin
 **A simple login for Nukkit.**
-**Support ** **`Mysql`** **And** **`Yaml`**
+**Support **`Mysql` **And** `Yaml`
 ##Commands
 - **/login [passwd]** : **Login in server**
 - **/passwd [new passwd]** : **Change player passwd**
@@ -8,10 +8,10 @@
 - **/setmail [mail]** : **Set player mail**
 
 ##RegisterSteps
-- **Type your ** **`Name`**
-- **Type your ** **`Passwd`**
-- **Comfirm your ** **`Passwd`**
-- **Type your ** **`Mail`**
+- **Type your ** `Name`
+- **Type your ** `Passwd`
+- **Comfirm your ** `Passwd`
+- **Type your ** `Mail`
 - **Register success!**
 
 ##Config
@@ -40,5 +40,3 @@
 |unlogin-move | bool | true | can move without login |
 |message-type | int | 1 | PluginMessageType `1=chat` `3=popup` `4=tip` |
 |ban-username | array | ["steve","steve*"] | can't register username `*`=`\w` |
-
-
