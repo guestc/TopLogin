@@ -33,6 +33,7 @@
 | :------ | :--: | :----: | :-------------- |
 |storage-type | string | yaml | Choose `mysql` or `yaml`|
 |multi-server | bool | false | enable MultiServer login|
+|main-server| bool | true | olny main server can register |
 |mysql-src| string | 127.0.0.1 | Mysql Source |
 |mysql-user| string | root | Mysql User |
 |mysql-passwd | string | 123456789 | Mysql Passwd|
