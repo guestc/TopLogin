@@ -9,6 +9,7 @@ import cn.nukkit.command.ConsoleCommandSender;
 import cn.nukkit.plugin.PluginBase;
 import cn.guestc.nukkit.login.Config.*;
 import cn.nukkit.utils.Config;
+import cn.nukkit.utils.TextFormat;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -32,7 +33,6 @@ public class TopLogin extends PluginBase {
         getServer().getPluginManager().registerEvents(new RegisterEvent(this),this);
         getServer().getPluginManager().registerEvents(new LoginEvent(this),this);
         api.init();
-        getLogger().warning("is register "+dataHelper.IsRegister("fucK2"));
     }
 
     @Override
@@ -49,12 +49,14 @@ public class TopLogin extends PluginBase {
         reloadConfig();
         pconfig = getConfig();
         if(pconfig.get("storage-type").toString().equals("mysql")){
+            getLogger().info("Using "+ TextFormat.GREEN+"MYSQL");
             dataHelper = new MysqlConfig();
             dataHelper.DB_url = String.format("jdbc:mysql://%1$s:3306/%2$s",pconfig.get("mysql-src").toString(),pconfig.get("mysql-database").toString());
             dataHelper.DB_passwd = pconfig.get("mysql-passwd").toString();
             dataHelper.DB_prefix = pconfig.get("mysql-table-prefix").toString();
             dataHelper.DB_user = pconfig.get("mysql-user").toString();
         }else{
+            getLogger().info("Using "+ TextFormat.GREEN+"YAML");
             dataHelper = new YamlConfig();
             dataHelper.DataDir = getDataFolder().getAbsolutePath()+"//user//";
         }
@@ -63,7 +65,9 @@ public class TopLogin extends PluginBase {
     }
 
     protected Map<String,Object> getLanuage(){
-        Config conf = new Config(getDataFolder()+"//"+pconfig.get("language").toString());
+        String language = pconfig.get("language").toString();
+        Config conf = new Config(getDataFolder()+"//"+language);
+        getLogger().info("language file "+ TextFormat.GREEN+language);
         return conf.getAll();
     }
 

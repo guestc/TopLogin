@@ -31,4 +31,9 @@ public abstract class DataHelper {
 
     abstract public Date getLastTime(String user);
 
+    abstract public long getCid(String user);
+
+    abstract public String getUUID(String user);
+
+    abstract public String getDevice(String user);
 }

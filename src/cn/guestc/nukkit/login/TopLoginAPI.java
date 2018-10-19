@@ -4,6 +4,7 @@ import cn.guestc.nukkit.login.utils.ConfigData;
 import cn.nukkit.Player;
 import cn.nukkit.network.protocol.TextPacket;
 import cn.nukkit.utils.Config;
+import cn.nukkit.utils.LoginChainData;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -101,8 +102,11 @@ public class TopLoginAPI {
             if(ltime != null){
                 Date ntime = new Date();
                 if((ntime.getTime() - ltime.getTime()) <= (1000*60*60* cdata.AutoLoginValidHours)){
-                    Message(player,String.format(getMessage("autologin"),cdata.AutoLoginValidHours));
-                    LoginIn(user);
+                    LoginChainData data = player.getLoginChainData();
+                    if(data.getClientId() == plugin.dataHelper.getCid(user) && data.getClientUUID().toString().equals(plugin.dataHelper.getUUID(user))){
+                        Message(player,String.format(getMessage("autologin"),cdata.AutoLoginValidHours));
+                        LoginIn(user);
+                    }
                     return;
                 }
             }

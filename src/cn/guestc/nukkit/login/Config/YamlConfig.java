@@ -3,6 +3,7 @@ package cn.guestc.nukkit.login.Config;
 import cn.guestc.nukkit.login.TopLoginAPI;
 import cn.nukkit.Player;
 import cn.nukkit.utils.Config;
+import cn.nukkit.utils.LoginChainData;
 
 import java.io.*;
 import java.text.ParseException;
@@ -63,6 +64,10 @@ public class YamlConfig extends DataHelper {
     public void LoginOut(Player player) {
         Config pconfig = getUserConfig(player.getName());
         pconfig.set("last-time",TopLoginAPI.getTime());
+        LoginChainData data =  player.getLoginChainData();
+        pconfig.set("last-cid",data.getClientId());
+        pconfig.set("last-uuid",data.getClientUUID().toString());
+        pconfig.set("last-device",data.getDeviceModel());
         pconfig.save();
     }
 
@@ -87,5 +92,36 @@ public class YamlConfig extends DataHelper {
             }
         }
         return null;
+    }
+
+    @Override
+    public String getUUID(String user) {
+        Config pconfig = getUserConfig(user);
+        if(pconfig.exists("last-uuid")){
+            return pconfig.get("last-uuid").toString();
+        }
+        return null;
+    }
+
+    @Override
+    public String getDevice(String user) {
+        Config pconfig = getUserConfig(user);
+        if(pconfig.exists("last-device")){
+            return pconfig.get("last-device").toString();
+        }
+        return null;
+    }
+
+    @Override
+    public long getCid(String user) {
+        Config pconfig = getUserConfig(user);
+        if(pconfig.exists("last-cid")){
+            try{
+                return Long.parseLong(pconfig.get("last-cid").toString());
+            }catch(Exception e){
+                return 0;
+            }
+        }
+        return 0;
     }
 }
