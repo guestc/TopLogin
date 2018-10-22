@@ -19,4 +19,5 @@ public class ConfigData {
     public String LoginType = "text";
     public boolean MultiServer = false;
     public boolean MainServer = false;
+    public boolean EnableFormUI = true;
 }

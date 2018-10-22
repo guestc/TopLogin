@@ -16,6 +16,9 @@ mysql-database: "toplogin"
 #language file default language_chs.yml
 language: "language_chs.yml"
 
+#enable Form UI
+enable-form-ui: true
+
 ###########User#############
 #passwd min lenght
 passwd-min: 8
@@ -68,7 +71,7 @@ message-type: 1
 #ban username
 ban-username:
   - "steve"
-  - "^guestc\\w*$"
+  - "^steve\\w*$"
 ##############################
 
 

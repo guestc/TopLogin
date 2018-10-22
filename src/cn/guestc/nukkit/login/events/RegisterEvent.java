@@ -9,6 +9,9 @@ import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.player.*;
+import cn.nukkit.form.response.FormResponse;
+import cn.nukkit.form.window.FormWindow;
+import cn.nukkit.form.window.FormWindowSimple;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -17,6 +20,9 @@ public class RegisterEvent implements Listener {
     private TopLogin plugin;
 
     private TopLoginAPI API;
+
+    private FormWindow Funreg;
+
 
     public enum RegisterState{
         confirmName,
@@ -32,6 +38,7 @@ public class RegisterEvent implements Listener {
     public RegisterEvent(TopLogin toplogin){
         plugin = toplogin;
         API = plugin.api;
+        Funreg = new FormWindowSimple(API.getMessage("unreg-usage-ui-title"),API.getMessage("unreg-usage-ui-text"));
     }
 
     @EventHandler(priority = EventPriority.HIGH,ignoreCancelled = false)
@@ -39,6 +46,9 @@ public class RegisterEvent implements Listener {
         Player player = event.getPlayer();
         String name = player.getName();
         if(!plugin.dataHelper.IsRegister(name)){
+            if(API.cdata.EnableFormUI){
+                player.showFormWindow(Funreg);
+            }
             player.sendMessage(API.getMessage("reg-comfirm-name"));
         }else{
             API.AutoLogin(event.getPlayer());
@@ -69,7 +79,7 @@ public class RegisterEvent implements Listener {
                         String passwd = TopLoginAPI.getPasswdFormStr(msg.replace("/login ",""));
                         if(plugin.dataHelper.VerifyPasswd(player.getName(),passwd)){
                             API.Message(player,API.getMessage("login-in-success"));
-                            API.LoginIn(player.getName());
+                            API.LoginIn(player);
                         }else{
                             API.Message(player,API.getMessage("login-in-wrong-passwd"));
                             API.Message(player,API.getMessage("login-in-message"));
@@ -111,7 +121,7 @@ public class RegisterEvent implements Listener {
                     plugin.dataHelper.AddUser(name,passwd,msg);
                     player.sendMessage(API.getMessage("reg-success"));
                     player.sendMessage(String.format(API.getMessage("reg-success-return-msg"),name,ud1.passwd,msg));
-                    API.LoginIn(name);
+                    API.LoginIn(player);
                     reging.remove(name);
                     registers.remove(name);
                     break;
@@ -146,7 +156,7 @@ public class RegisterEvent implements Listener {
             if(!API.isLogin(name)){
                 if(API.cdata.LoginType.equals("text")){
                     if(plugin.dataHelper.VerifyPasswd(name,TopLoginAPI.getPasswdFormStr(msg))){
-                        API.LoginIn(name);
+                        API.LoginIn(player);
                         API.Message(player,API.getMessage("login-in-success"));
                     }else{
                         API.Message(player,API.getMessage("login-in-wrong-passwd"));

@@ -3,6 +3,8 @@ package cn.guestc.nukkit.login;
 import cn.guestc.nukkit.login.Config.MysqlConfig;
 import cn.guestc.nukkit.login.utils.ConfigData;
 import cn.nukkit.Player;
+import cn.nukkit.form.window.FormWindow;
+import cn.nukkit.form.window.FormWindowSimple;
 import cn.nukkit.network.protocol.TextPacket;
 import cn.nukkit.utils.Config;
 import cn.nukkit.utils.LoginChainData;
@@ -30,6 +32,9 @@ public class TopLoginAPI {
 
     public ConfigData cdata;
 
+    private FormWindow Funlogin;
+    private FormWindow Floginin;
+
 
     public static TopLoginAPI getObject(){
         return TopLoginAPI.obj;
@@ -38,6 +43,8 @@ public class TopLoginAPI {
      protected TopLoginAPI(TopLogin toplogin){
         plugin = toplogin;
         TopLoginAPI.obj = this;
+         Funlogin = new FormWindowSimple(getMessage("login-usage-ui-title"),getMessage("login-usage-ui-text"));
+         Floginin = new FormWindowSimple(getMessage("login-in-ui-title"),getMessage("login-in-ui-text"));
     }
 
     protected void init(){
@@ -62,6 +69,7 @@ public class TopLoginAPI {
         cdata.LoginType = plugin.pconfig.get("login-type").toString();
         cdata.MultiServer = Boolean.parseBoolean(plugin.pconfig.get("multi-server").toString());
         cdata.MainServer = Boolean.parseBoolean(plugin.pconfig.get("main-server").toString());
+        cdata.EnableFormUI = Boolean.parseBoolean(plugin.pconfig.get("enable-form-ui").toString());
     }
 
     public static String getPasswdFormStr(String str){
@@ -91,10 +99,14 @@ public class TopLoginAPI {
         return sd.parse(date);
     }
 
-    public void LoginIn(String user){
-        if(!loginusers.contains(user)){
-            loginusers.add(user);
-            plugin.getLogger().info(String.format(getMessage("user-login-message"),user,getNameFromIp(plugin.getServer().getPlayer(user).getAddress())));
+    public void LoginIn(Player player){
+        String name = player.getName();
+        if(!loginusers.contains(name)){
+            loginusers.add(name);
+            plugin.getLogger().info(String.format(getMessage("user-login-message"),name,getNameFromIp(player.getAddress())));
+            if(cdata.EnableFormUI){
+                player.showFormWindow(Floginin);
+            }
         }
     }
 
@@ -116,11 +128,14 @@ public class TopLoginAPI {
                     LoginChainData data = player.getLoginChainData();
                     if(data.getClientId() == plugin.dataHelper.getCid(user) && data.getClientUUID().toString().equals(plugin.dataHelper.getUUID(user))){
                         Message(player,String.format(getMessage("autologin"),cdata.AutoLoginValidHours));
-                        LoginIn(user);
+                        LoginIn(player);
                     }
                     return;
                 }
             }
+        }
+        if(cdata.EnableFormUI){
+            player.showFormWindow(Funlogin);
         }
         Message(player,getMessage("login-in-message"));
     }

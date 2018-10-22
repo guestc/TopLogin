@@ -27,9 +27,9 @@ public class TopLogin extends PluginBase {
 
     @Override
     public void onEnable(){
+        api.init();
         getServer().getPluginManager().registerEvents(new RegisterEvent(this),this);
         getServer().getPluginManager().registerEvents(new LoginEvent(this),this);
-        api.init();
         getServer().getScheduler().scheduleRepeatingTask(new MysqlTask(this),20*9);
         getServer().getScheduler().scheduleRepeatingTask(new MyTask(this),20*3);
     }
