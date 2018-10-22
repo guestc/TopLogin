@@ -40,6 +40,7 @@
 |mysql-database | string | toplogin | Mysql DataBase |
 |mysql-table-prefix | string | mc_login | Mysql table `preifx` name|
 |language | string | language_chs.yml | Choose language file in `PlugDataFolder`|
+|enable-form-ui| bool | true | enable formWindow UI |
 |passwd-min | int | 8 | passwd min lenght |
 |passwd-max | int | 16 | passwd max lenght |
 |username-min | int | 3 | player name min lenght |
