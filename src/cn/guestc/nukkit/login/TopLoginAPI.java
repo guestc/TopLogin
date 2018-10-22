@@ -1,5 +1,6 @@
 package cn.guestc.nukkit.login;
 
+import cn.guestc.nukkit.login.Config.MysqlConfig;
 import cn.guestc.nukkit.login.utils.ConfigData;
 import cn.nukkit.Player;
 import cn.nukkit.network.protocol.TextPacket;
@@ -58,6 +59,8 @@ public class TopLoginAPI {
         cdata.AutoLogin = Boolean.parseBoolean(plugin.pconfig.get("autologin").toString());
         cdata.AutoLoginValidHours = Integer.parseInt(plugin.pconfig.get("autologin-valid-hours").toString());
         cdata.LoginType = plugin.pconfig.get("login-type").toString();
+        cdata.MultiServer = Boolean.parseBoolean(plugin.pconfig.get("multi-server").toString());
+        cdata.MainServer = Boolean.parseBoolean(plugin.pconfig.get("main-server").toString());
     }
 
     public String getMysqlConnectStr(Config conf){
@@ -115,7 +118,12 @@ public class TopLoginAPI {
     }
 
     public boolean isLogin(String user){
-        return loginusers.contains(user);
+        if(loginusers.contains(user))return true;
+        if(cdata.MultiServer){
+            MysqlConfig mc = (MysqlConfig) plugin.dataHelper;
+            return mc.isLogin(user);
+        }
+        return false;
     }
 
     public void Message(Player player,String msg){
@@ -200,6 +208,10 @@ public class TopLoginAPI {
     public static String getNameFromIp(String ip){
         //todo
         return ip;
+    }
+
+    public ArrayList<String> getLoginUsers(){
+        return loginusers;
     }
 
 

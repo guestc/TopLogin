@@ -19,6 +19,7 @@ public class YamlConfig extends DataHelper {
     }
     @Override
     public void init(){
+        type =Type.yaml;
         //connectstr is data dir   ./TopLogin/user/
         File root = new File(DataDir);
         if(!root.exists())  root.mkdir();
@@ -27,6 +28,11 @@ public class YamlConfig extends DataHelper {
             File f = new File(DataDir+"//"+dir+"//");
             if(!f.exists())  f.mkdir();
         }
+    }
+
+    @Override
+    public boolean canRegister() {
+        return true;
     }
 
     @Override

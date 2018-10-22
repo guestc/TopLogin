@@ -39,7 +39,7 @@ public class RegisterEvent implements Listener {
         Player player = event.getPlayer();
         String name = player.getName();
         if(!plugin.dataHelper.IsRegister(name)){
-            API.Message(player,API.getMessage("reg-comfirm-name"));
+            player.sendMessage(API.getMessage("reg-comfirm-name"));
         }else{
             API.AutoLogin(event.getPlayer());
         }
@@ -92,25 +92,25 @@ public class RegisterEvent implements Listener {
                 case confirmName:
                     if(msg.toLowerCase().equals(name.toLowerCase())){
                         registers.put(name,RegisterState.Passwd);
-                        API.Message(player,API.getMessage("reg-passwd"));
+                        player.sendMessage(API.getMessage("reg-passwd"));
                         reging.put(name,new UserData());
                         event.setCancelled(true);
                         return;
                     }
-                    API.Message(player,API.getMessage("reg-comfirm-name-wrong"));
+                    player.sendMessage(API.getMessage("reg-comfirm-name-wrong"));
                     break;
                 case Mail:
                     if(!TopLoginAPI.isMail(msg)){
-                        API.Message(player,API.getMessage("reg-mail-wrong"));
-                        API.Message(player,API.getMessage("reg-mail"));
+                        player.sendMessage(API.getMessage("reg-mail-wrong"));
+                        player.sendMessage(API.getMessage("reg-mail"));
                         event.setCancelled(true);
                         return;
                     }
                     UserData ud1 = reging.get(name);
                     String passwd = TopLoginAPI.getPasswdFormStr(ud1.passwd);
                     plugin.dataHelper.AddUser(name,passwd,msg);
-                    API.Message(player,API.getMessage("reg-success"));
-                    API.Message(player, String.format(API.getMessage("reg-success-return-msg"),name,ud1.passwd,msg));
+                    player.sendMessage(API.getMessage("reg-success"));
+                    player.sendMessage(String.format(API.getMessage("reg-success-return-msg"),name,ud1.passwd,msg));
                     API.LoginIn(name);
                     reging.remove(name);
                     registers.remove(name);
@@ -118,12 +118,12 @@ public class RegisterEvent implements Listener {
                 case Passwd:
                     String remsg = API.CheckPasswd(msg);
                     if(remsg != null){
-                        API.Message(player,remsg);
-                        API.Message(player,API.getMessage("reg-comfirm-name-wrong"));
+                        player.sendMessage(remsg);
+                        player.sendMessage(API.getMessage("reg-comfirm-name-wrong"));
                         event.setCancelled(true);
                         return;
                     }
-                    API.Message(player,API.getMessage("reg-passwd-comfirm"));
+                    player.sendMessage(API.getMessage("reg-passwd-comfirm"));
                     registers.put(name,RegisterState.confirmPasswd);
                     UserData ud = reging.get(name);
                     ud.name = name;
@@ -132,12 +132,12 @@ public class RegisterEvent implements Listener {
                     break;
                 case confirmPasswd:
                     if(!reging.get(name).passwd.equals(msg)){
-                        API.Message(player,API.getMessage("reg-passwd-comfirm-not"));
-                        API.Message(player,API.getMessage("reg-passwd-comfirm"));
+                        player.sendMessage(API.getMessage("reg-passwd-comfirm-not"));
+                        player.sendMessage(API.getMessage("reg-passwd-comfirm"));
                         event.setCancelled(true);
                         return;
                     }
-                    API.Message(player,API.getMessage("reg-mail"));
+                    player.sendMessage(API.getMessage("reg-mail"));
                     registers.put(name,RegisterState.Mail);
                     break;
             }
@@ -164,6 +164,9 @@ public class RegisterEvent implements Listener {
             String name = event.getPlayer().getName();
             if(!plugin.dataHelper.IsRegister(name)){
                 String msg = null;
+                if(!plugin.dataHelper.canRegister()){
+                    msg = API.getMessage("cant-reg");
+                }
                 if(API.isBanReg(name)){
                     msg = API.getMessage("reg-comfirm-name-banned");
                 }

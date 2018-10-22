@@ -7,7 +7,11 @@ import java.util.Date;
 
 public abstract class DataHelper {
 
-    public Object obj;
+    public enum Type{
+        mysql,
+        yaml
+    }
+    public Type type;
     public String DataDir;
     public String DB_url;
     public String DB_user;
@@ -36,4 +40,6 @@ public abstract class DataHelper {
     abstract public String getUUID(String user);
 
     abstract public String getDevice(String user);
+
+    abstract public boolean canRegister();
 }

@@ -1,5 +1,10 @@
 # mysql or yaml
 storage-type: yaml
+
+# multi-server login
+multi-server: false
+# olny main server can register
+main-server: true
 #########Mysql#############
 mysql-src: "127.0.0.1"
 mysql-user: "root"

@@ -2,6 +2,8 @@ package cn.guestc.nukkit.login;
 
 import cn.guestc.nukkit.login.events.LoginEvent;
 import cn.guestc.nukkit.login.events.RegisterEvent;
+import cn.guestc.nukkit.login.tasks.MysqlTask;
+import cn.guestc.nukkit.login.tasks.MyTask;
 import cn.nukkit.Player;
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
@@ -11,12 +13,7 @@ import cn.guestc.nukkit.login.Config.*;
 import cn.nukkit.utils.Config;
 import cn.nukkit.utils.TextFormat;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.*;
 
 public class TopLogin extends PluginBase {
 
@@ -33,6 +30,8 @@ public class TopLogin extends PluginBase {
         getServer().getPluginManager().registerEvents(new RegisterEvent(this),this);
         getServer().getPluginManager().registerEvents(new LoginEvent(this),this);
         api.init();
+        getServer().getScheduler().scheduleRepeatingTask(new MysqlTask(this),20*9);
+        getServer().getScheduler().scheduleRepeatingTask(new MyTask(this),20*3);
     }
 
     @Override

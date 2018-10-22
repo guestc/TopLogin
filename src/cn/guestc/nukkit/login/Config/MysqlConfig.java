@@ -15,13 +15,17 @@ public class MysqlConfig extends DataHelper{
 
     private String tb_userinfo;
     private String tb_uidlist;
+    private String tb_multiserver;
 
     private Connection connect = null;
     private Statement statement = null;
+
     @Override
     public void init() {
+        type =Type.mysql;
         tb_userinfo = DB_prefix+"_userinfo";
         tb_uidlist = DB_prefix+"_uidlist";
+        tb_multiserver = DB_prefix+"_multiserver";
         InterfaceMysql();
         CreateTables();
     }
@@ -46,6 +50,10 @@ public class MysqlConfig extends DataHelper{
                     "uid int not null primary key unique key auto_increment," +
                     "name varchar(16)  not null unique key" +
                     ")engine=InnoDB default charset utf8;");
+            statement.execute("create table if not exists "+tb_multiserver+"(" +
+                    "name varchar(16) not null primary key unique," +
+                    "datetime bigint not null" +
+                    ")default charset utf8;");
             statement.execute("create table if not exists "+tb_userinfo+"(" +
                     "uid int not null primary key unique key auto_increment," +
                     "passwd varchar(32) not null," +
@@ -90,7 +98,6 @@ public class MysqlConfig extends DataHelper{
             return false;
         }
     }
-
 
     @Override
     public boolean SetPasswd(String user, String passwd) {
@@ -138,8 +145,8 @@ public class MysqlConfig extends DataHelper{
         String sql = "select uid from "+tb_uidlist+" where name='"+user.toLowerCase()+"';";
         try{
             ResultSet rs =  statement.executeQuery(sql);
-            if(!rs.next()) return false;
-            return rs.getInt("uid") != 0;
+            return rs.next();
+
         }catch (SQLException e){
             plugin.getLogger().warning("mysql select uid wrong: "+e.getMessage());
             return true;
@@ -201,5 +208,38 @@ public class MysqlConfig extends DataHelper{
             plugin.getLogger().warning("mysql getUUID wrong: "+e.getMessage());
             return null;
         }
+    }
+
+    @Override
+    public boolean canRegister() {
+        return plugin.api.cdata.MainServer;
+    }
+
+    public void Check(){
+        try{
+            long newtime = TopLoginAPI.getTime(TopLoginAPI.getTime()).getTime();
+            long oldtime = newtime - 1000*10;
+            String sql_del = "delete from "+tb_multiserver+" where datetime < "+oldtime +";";
+            statement.execute(sql_del);
+            for(String user : plugin.api.getLoginUsers()){
+                String sql_insert = "replace into "+tb_multiserver+
+                        " (name,datetime) values ('"+user.toLowerCase()+"',"+newtime+");";
+                statement.execute(sql_insert);
+            }
+        }catch(Exception e){
+            plugin.getLogger().warning("mysql Check wrong: "+e.getMessage());
+        }
+    }
+
+    public boolean isLogin(String user){
+        try{
+            String sql = "select datetime from "+
+                    tb_multiserver+" where name='"+user.toLowerCase()+"';";
+            ResultSet rs = statement.executeQuery(sql);
+            return rs.next();
+        }catch(Exception e){
+            plugin.getLogger().warning("mysql getUUID wrong: "+e.getMessage());
+        }
+        return true;
     }
 }

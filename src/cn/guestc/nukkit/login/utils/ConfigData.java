@@ -17,5 +17,6 @@ public class ConfigData {
     public int AutoLoginValidHours = 2;
     public byte MessageType = 1;
     public String LoginType = "text";
-
+    public boolean MultiServer = false;
+    public boolean MainServer = false;
 }
