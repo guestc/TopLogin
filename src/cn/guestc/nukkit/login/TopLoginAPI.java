@@ -7,6 +7,7 @@ import cn.nukkit.network.protocol.TextPacket;
 import cn.nukkit.utils.Config;
 import cn.nukkit.utils.LoginChainData;
 
+import java.security.MessageDigest;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -63,14 +64,21 @@ public class TopLoginAPI {
         cdata.MainServer = Boolean.parseBoolean(plugin.pconfig.get("main-server").toString());
     }
 
-    public String getMysqlConnectStr(Config conf){
-        //todo
-        return "";
-    }
-
     public static String getPasswdFormStr(String str){
-        //todo  md5
-        return str;
+        byte[] bts;
+        try{
+            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            bts = md5.digest(str.getBytes());
+        }catch (Exception e){
+            return null;
+        }
+        final char[] hex_d = "0123456789ABCDEF".toCharArray();
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < bts.length;i++){
+            sb.append(hex_d[(bts[i] >> 4) & 0x0f]);
+            sb.append(hex_d[bts[i] & 0x0f]);
+        }
+        return sb.toString();
     }
 
     public static String getTime(){
