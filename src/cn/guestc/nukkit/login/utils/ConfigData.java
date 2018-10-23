@@ -20,4 +20,13 @@ public class ConfigData {
     public boolean MultiServer = false;
     public boolean MainServer = false;
     public boolean EnableFormUI = true;
+    public boolean EnbaleMailVerify = true;
+    public String MailSmtpPort = "465";
+    public String MailSmtpHost = "smtp.163.com";
+    public String MailUser;
+    public String MailPasswd;
+    public int MailVerifyWrongTime = 3;
+    public int MailVerifyBanTime = 10;
+    public int PasswdWrongBanTime = 30;
+    public int PasswdWrongTime = 5;
 }

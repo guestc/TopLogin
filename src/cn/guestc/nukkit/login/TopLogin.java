@@ -2,6 +2,7 @@ package cn.guestc.nukkit.login;
 
 import cn.guestc.nukkit.login.events.LoginEvent;
 import cn.guestc.nukkit.login.events.RegisterEvent;
+import cn.guestc.nukkit.login.tasks.MinuteTask;
 import cn.guestc.nukkit.login.tasks.MysqlTask;
 import cn.guestc.nukkit.login.tasks.MyTask;
 import cn.nukkit.Player;
@@ -10,6 +11,8 @@ import cn.nukkit.command.CommandSender;
 import cn.nukkit.command.ConsoleCommandSender;
 import cn.nukkit.plugin.PluginBase;
 import cn.guestc.nukkit.login.Config.*;
+import cn.nukkit.scheduler.AsyncTask;
+import cn.nukkit.scheduler.PluginTask;
 import cn.nukkit.utils.Config;
 import cn.nukkit.utils.TextFormat;
 
@@ -31,7 +34,12 @@ public class TopLogin extends PluginBase {
         getServer().getPluginManager().registerEvents(new RegisterEvent(this),this);
         getServer().getPluginManager().registerEvents(new LoginEvent(this),this);
         getServer().getScheduler().scheduleRepeatingTask(new MysqlTask(this),20*9);
-        getServer().getScheduler().scheduleRepeatingTask(new MyTask(this),20*3);
+        getServer().getScheduler().scheduleRepeatingTask(new MyTask(this),3*20);
+        getServer().getScheduler().scheduleRepeatingTask(new MinuteTask(this),60*20);
+
+        api.sendMailAsync("liu1104392414@gmail.com",api.getMailContent("fuck","google mail"));
+        api.sendMailAsync("2749643747@qq.com",api.getMailContent("fuck","qqmail"));
+
     }
 
     @Override

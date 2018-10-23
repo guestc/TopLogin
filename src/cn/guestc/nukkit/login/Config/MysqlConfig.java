@@ -218,7 +218,7 @@ public class MysqlConfig extends DataHelper{
     public void Check(){
         try{
             long newtime = TopLoginAPI.getTime(TopLoginAPI.getTime()).getTime();
-            long oldtime = newtime - 1000*10;
+            long oldtime = newtime - 1000*11;
             String sql_del = "delete from "+tb_multiserver+" where datetime < "+oldtime +";";
             statement.execute(sql_del);
             for(String user : plugin.api.getLoginUsers()){

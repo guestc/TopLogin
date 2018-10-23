@@ -20,6 +20,12 @@ language: "language_chs.yml"
 enable-form-ui: true
 
 ###########User#############
+#max passwd wrong time
+allow-passwd-wrong-time: 5
+
+#too many wrong ban 30minute
+passwd-wrong-ban: 30
+
 #passwd min lenght
 passwd-min: 8
 
@@ -62,6 +68,18 @@ unlogin-pickitem: false
 unlogin-dropitem: false
 
 
+############mail###########
+enable-mail-verify: false
+mail-smtp-port: "465"
+mail-smtp-host: "smtp.163.com"
+mail-user: "xx@qq.com"
+mail-passwd: "xxxx"
+#enter wrong code time
+mail-verify-wrong-time: 3
+#minutes
+mail-verify-ban-time: 10
+
+###########################
 #message type
 #1=chat
 #3=popup

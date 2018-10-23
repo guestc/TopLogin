@@ -12,6 +12,8 @@ import cn.nukkit.event.player.*;
 import cn.nukkit.form.response.FormResponse;
 import cn.nukkit.form.window.FormWindow;
 import cn.nukkit.form.window.FormWindowSimple;
+import cn.nukkit.scheduler.AsyncTask;
+import cn.nukkit.scheduler.PluginTask;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -28,7 +30,8 @@ public class RegisterEvent implements Listener {
         confirmName,
         Passwd,
         confirmPasswd,
-        Mail
+        Mail,
+        MailVerify
     }
 
     private HashMap<String,RegisterState> registers = new HashMap<>();
@@ -47,9 +50,15 @@ public class RegisterEvent implements Listener {
         String name = player.getName();
         if(!plugin.dataHelper.IsRegister(name)){
             if(API.cdata.EnableFormUI){
-                player.showFormWindow(Funreg);
+                PluginTask<TopLogin> at = new PluginTask<TopLogin>(plugin) {
+                    @Override
+                    public void onRun(int x) {
+                        player.showFormWindow(Funreg);
+                    }
+                };
+                plugin.getServer().getScheduler().scheduleDelayedTask(at,20*8);
             }
-            player.sendMessage(API.getMessage("reg-comfirm-name"));
+            API.Message(player,API.getMessage("reg-comfirm-name"),(byte) 1);
         }else{
             API.AutoLogin(event.getPlayer());
         }
@@ -81,6 +90,7 @@ public class RegisterEvent implements Listener {
                             API.Message(player,API.getMessage("login-in-success"));
                             API.LoginIn(player);
                         }else{
+                            API.WrongPasswd(player);
                             API.Message(player,API.getMessage("login-in-wrong-passwd"));
                             API.Message(player,API.getMessage("login-in-message"));
                         }
@@ -102,38 +112,65 @@ public class RegisterEvent implements Listener {
                 case confirmName:
                     if(msg.toLowerCase().equals(name.toLowerCase())){
                         registers.put(name,RegisterState.Passwd);
-                        player.sendMessage(API.getMessage("reg-passwd"));
+                        API.Message(player,API.getMessage("reg-passwd"),(byte) 1);
                         reging.put(name,new UserData());
                         event.setCancelled(true);
                         return;
                     }
-                    player.sendMessage(API.getMessage("reg-comfirm-name-wrong"));
+                    API.Message(player,API.getMessage("reg-comfirm-name-wrong"),(byte) 1);
                     break;
                 case Mail:
                     if(!TopLoginAPI.isMail(msg)){
-                        player.sendMessage(API.getMessage("reg-mail-wrong"));
-                        player.sendMessage(API.getMessage("reg-mail"));
+                        API.Message(player,API.getMessage("reg-mail-wrong"),(byte) 1);
+                        API.Message(player,API.getMessage("reg-mail"),(byte) 1);
                         event.setCancelled(true);
                         return;
                     }
                     UserData ud1 = reging.get(name);
-                    String passwd = TopLoginAPI.getPasswdFormStr(ud1.passwd);
+                    ud1.mail = msg;
+                    reging.put(name,ud1);
+                    if(API.cdata.EnbaleMailVerify){
+                        registers.put(name,RegisterState.MailVerify);
+                        API.Message(player,String.format(API.getMessage("reg-mail-verify"),msg),(byte) 1);
+                        String code = API.RandCode(player);
+                        API.sendMailAsync(msg,API.getMailContent(player.getName(),code),player);
+                    }else{
+                        String passwd = TopLoginAPI.getPasswdFormStr(ud1.passwd);
+                        plugin.dataHelper.AddUser(name,passwd,msg);
+                        API.Message(player,API.getMessage("reg-success"),(byte) 1);
+                        API.Message(player,String.format(API.getMessage("reg-success-return-msg"),name,ud1.passwd,msg),(byte) 1);
+                        API.LoginIn(player);
+                        reging.remove(name);
+                        registers.remove(name);
+                    }
+                    break;
+
+                case MailVerify:
+                    if(!API.VerifyMailCode(player,msg)){
+                        API.Message(player,API.getMessage("reg-mail-verify-wrong-code"),(byte) 1);
+                        event.setCancelled(true);
+                        API.WrongMailVerifyCode(player);
+                        return;
+                    }
+                    UserData ud2 = reging.get(name);
+                    String passwd = TopLoginAPI.getPasswdFormStr(ud2.passwd);
                     plugin.dataHelper.AddUser(name,passwd,msg);
-                    player.sendMessage(API.getMessage("reg-success"));
-                    player.sendMessage(String.format(API.getMessage("reg-success-return-msg"),name,ud1.passwd,msg));
+                    API.Message(player,API.getMessage("reg-success"),(byte) 1);
+                    API.Message(player,String.format(API.getMessage("reg-success-return-msg"),name,ud2.passwd,ud2.mail),(byte) 1);
                     API.LoginIn(player);
                     reging.remove(name);
                     registers.remove(name);
+                    //todo
                     break;
                 case Passwd:
                     String remsg = API.CheckPasswd(msg);
                     if(remsg != null){
-                        player.sendMessage(remsg);
-                        player.sendMessage(API.getMessage("reg-comfirm-name-wrong"));
+                        API.Message(player,API.getMessage("reg-comfirm-name-wrong"),(byte) 1);
+                        API.Message(player,remsg,(byte) 1);
                         event.setCancelled(true);
                         return;
                     }
-                    player.sendMessage(API.getMessage("reg-passwd-comfirm"));
+                    API.Message(player,API.getMessage("reg-passwd-comfirm"),(byte) 1);
                     registers.put(name,RegisterState.confirmPasswd);
                     UserData ud = reging.get(name);
                     ud.name = name;
@@ -142,12 +179,12 @@ public class RegisterEvent implements Listener {
                     break;
                 case confirmPasswd:
                     if(!reging.get(name).passwd.equals(msg)){
-                        player.sendMessage(API.getMessage("reg-passwd-comfirm-not"));
-                        player.sendMessage(API.getMessage("reg-passwd-comfirm"));
+                        API.Message(player,API.getMessage("reg-passwd-comfirm-not"),(byte) 1);
+                        API.Message(player,API.getMessage("reg-passwd-comfirm"),(byte) 1);
                         event.setCancelled(true);
                         return;
                     }
-                    player.sendMessage(API.getMessage("reg-mail"));
+                    API.Message(player,API.getMessage("reg-mail"),(byte) 1);
                     registers.put(name,RegisterState.Mail);
                     break;
             }
@@ -172,6 +209,11 @@ public class RegisterEvent implements Listener {
     public void PreLogin(PlayerPreLoginEvent event){
         if(!event.isCancelled()){
             String name = event.getPlayer().getName();
+            if(API.isBan(event.getPlayer())){
+                event.setKickMessage(API.getMessage("time-banned"));
+                event.setCancelled(true);
+                return;
+            }
             if(!plugin.dataHelper.IsRegister(name)){
                 String msg = null;
                 if(!plugin.dataHelper.canRegister()){

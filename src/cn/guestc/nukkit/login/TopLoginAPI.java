@@ -6,17 +6,23 @@ import cn.nukkit.Player;
 import cn.nukkit.form.window.FormWindow;
 import cn.nukkit.form.window.FormWindowSimple;
 import cn.nukkit.network.protocol.TextPacket;
+import cn.nukkit.scheduler.AsyncTask;
+import cn.nukkit.scheduler.PluginTask;
 import cn.nukkit.utils.Config;
 import cn.nukkit.utils.LoginChainData;
+import com.google.common.base.Utf8;
 
 import java.security.MessageDigest;
+import java.security.Security;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
+
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeUtility;
 
 public class TopLoginAPI {
 
@@ -35,6 +41,13 @@ public class TopLoginAPI {
     private FormWindow Funlogin;
     private FormWindow Floginin;
 
+    private HashMap<String,Integer> BanUserInMins = new HashMap<>(),BanCidMins = new HashMap<>(),BanUUIDMins = new HashMap<>();
+
+    private HashMap<String,Integer> WrongMailCode = new HashMap<>(),WrongPasswd = new HashMap<>();
+    private HashMap<String,String> MailVerifyCode = new HashMap<>();
+
+
+
 
     public static TopLoginAPI getObject(){
         return TopLoginAPI.obj;
@@ -43,8 +56,6 @@ public class TopLoginAPI {
      protected TopLoginAPI(TopLogin toplogin){
         plugin = toplogin;
         TopLoginAPI.obj = this;
-         Funlogin = new FormWindowSimple(getMessage("login-usage-ui-title"),getMessage("login-usage-ui-text"));
-         Floginin = new FormWindowSimple(getMessage("login-in-ui-title"),getMessage("login-in-ui-text"));
     }
 
     protected void init(){
@@ -70,6 +81,18 @@ public class TopLoginAPI {
         cdata.MultiServer = Boolean.parseBoolean(plugin.pconfig.get("multi-server").toString());
         cdata.MainServer = Boolean.parseBoolean(plugin.pconfig.get("main-server").toString());
         cdata.EnableFormUI = Boolean.parseBoolean(plugin.pconfig.get("enable-form-ui").toString());
+        cdata.EnbaleMailVerify = Boolean.parseBoolean(plugin.pconfig.get("enable-mail-verify").toString());
+        cdata.MailSmtpPort = plugin.pconfig.get("mail-smtp-port").toString();
+        cdata.MailSmtpHost = plugin.pconfig.get("mail-smtp-host").toString();
+        cdata.MailUser = plugin.pconfig.get("mail-user").toString();
+        cdata.MailPasswd = plugin.pconfig.get("mail-passwd").toString();
+        cdata.MailVerifyBanTime = Integer.parseInt(plugin.pconfig.get("mail-verify-ban-time").toString());
+        cdata.MailVerifyWrongTime = Integer.parseInt(plugin.pconfig.get("mail-verify-ban-time").toString());
+        cdata.PasswdWrongTime = Integer.parseInt(plugin.pconfig.get("allow-passwd-wrong-time").toString());
+        cdata.PasswdWrongBanTime = Integer.parseInt(plugin.pconfig.get("passwd-wrong-ban").toString());
+
+        Funlogin = new FormWindowSimple(getMessage("login-usage-ui-title"),getMessage("login-usage-ui-text"));
+        Floginin = new FormWindowSimple(getMessage("login-in-ui-title"),getMessage("login-in-ui-text"));
     }
 
     public static String getPasswdFormStr(String str){
@@ -105,7 +128,13 @@ public class TopLoginAPI {
             loginusers.add(name);
             plugin.getLogger().info(String.format(getMessage("user-login-message"),name,getNameFromIp(player.getAddress())));
             if(cdata.EnableFormUI){
-                player.showFormWindow(Floginin);
+                PluginTask<TopLogin> at = new PluginTask<TopLogin>(plugin) {
+                    @Override
+                    public void onRun(int x) {
+                        player.showFormWindow(Floginin);
+                    }
+                };
+                plugin.getServer().getScheduler().scheduleDelayedTask(at,20*8);
             }
         }
     }
@@ -116,6 +145,41 @@ public class TopLoginAPI {
             loginusers.remove(name);
             plugin.dataHelper.LoginOut(player);
         }
+        if (MailVerifyCode.containsKey(name)){
+            MailVerifyCode.remove(name);
+        }
+    }
+
+    public void WrongMailVerifyCode(Player p){
+        String name = p.getName();
+        int time = 1;
+        if(WrongMailCode.containsKey(name)){
+            int old_time = WrongMailCode.get(name);
+            if(old_time > cdata.MailVerifyWrongTime){
+                p.kick(String.format(getMessage("reg-mail-verify-wrong-code-ban"),old_time,cdata.MailVerifyBanTime),true);
+                WrongMailCode.remove(name);
+                BanUserInMins.put(name.toLowerCase(),cdata.MailVerifyBanTime);
+                return;
+            }
+            time = old_time + 1;
+        }
+        WrongMailCode.put(name,time);
+    }
+
+    public void WrongPasswd(Player p){
+        String name = p.getName();
+        int time = 1;
+        if(WrongPasswd.containsKey(name)){
+            int old_time = WrongPasswd.get(name);
+            if(old_time > cdata.PasswdWrongTime){
+                p.kick(getMessage("login-in-wrong-passwd-ban"),true);
+                WrongPasswd.remove(name);
+                BanUserInMins.put(name.toLowerCase(),cdata.PasswdWrongBanTime);
+                return;
+            }
+            time = old_time + 1;
+        }
+        WrongPasswd.put(name,time);
     }
 
     public void AutoLogin(Player player){
@@ -135,7 +199,13 @@ public class TopLoginAPI {
             }
         }
         if(cdata.EnableFormUI){
-            player.showFormWindow(Funlogin);
+            PluginTask<TopLogin> at = new PluginTask<TopLogin>(plugin) {
+                @Override
+                public void onRun(int x) {
+                    player.showFormWindow(Funlogin);
+                }
+            };
+            plugin.getServer().getScheduler().scheduleDelayedTask(at,20*8);
         }
         Message(player,getMessage("login-in-message"));
     }
@@ -161,11 +231,34 @@ public class TopLoginAPI {
         player.sendMessage(msg);
     }
 
+    public void Message(Player player,String msg,byte type){
+        if(!cdata.UnloginMessage){
+            TextPacket pk = new TextPacket();
+            pk.type = type;
+            pk.offset = 600;
+            pk.message = msg;
+            player.dataPacket(pk);
+            return;
+        }
+        player.sendMessage(msg);
+    }
+
     public String getMessage(String str){
         if(language.containsKey(str)){
             return language.get(str).toString();
         }
         return null;
+    }
+
+    public void BanCid(String cid,int mins){
+        if(!BanCidMins.containsKey(cid)){
+            BanCidMins.put(cid,mins);
+        }
+    }
+    public void BanUUID(String uuid,int mins){
+        if(!BanUUIDMins.containsKey(uuid)){
+            BanUUIDMins.put(uuid,mins);
+        }
     }
 
     public int UserMin(){
@@ -233,8 +326,127 @@ public class TopLoginAPI {
         return ip;
     }
 
+    public boolean isBan(Player p){
+        if(BanUserInMins.containsKey(p.getName().toLowerCase()))return true;
+        LoginChainData data = p.getLoginChainData();
+        StringBuilder cid = new StringBuilder();
+        cid.append(data.getClientId());
+        if(BanCidMins.containsKey(cid.toString()))return true;
+        if(BanCidMins.containsKey(data.getClientUUID().toString()))return true;
+        return false;
+    }
+
+    public void ReduceMinute(){
+        Set<String> bus = BanUUIDMins.keySet();
+        for(String u : bus){
+            int mins = BanUUIDMins.get(u);
+            if(mins <= 1){
+                BanUUIDMins.remove(u);
+            }else{
+                --mins;
+                BanUUIDMins.put(u,mins);
+            }
+        }
+        Set<String> bcs = BanCidMins.keySet();
+        for(String u : bcs){
+            int mins = BanCidMins.get(u);
+            if(mins <= 1){
+                BanCidMins.remove(u);
+            }else{
+                --mins;
+                BanCidMins.put(u,mins);
+            }
+        }
+        Set<String> buss = BanUserInMins.keySet();
+        for(String u : buss){
+            int mins = BanUserInMins.get(u);
+            if(mins <= 1){
+                BanUserInMins.remove(u);
+            }else{
+                --mins;
+                BanUserInMins.put(u,mins);
+            }
+        }
+    }
+
+
     public ArrayList<String> getLoginUsers(){
         return loginusers;
+    }
+
+    public String RandCode(Player p){
+        StringBuilder sb = new StringBuilder();
+        Random rd = new Random();
+        for(int x = 0;x <4;x++){
+            sb.append(rd.nextInt(9));
+        }
+        MailVerifyCode.put(p.getName(),sb.toString());
+        return sb.toString();
+    }
+
+    public boolean VerifyMailCode(Player p ,String code){
+        if(MailVerifyCode.containsKey(p.getName())){
+            if(MailVerifyCode.get(p.getName()).equals(code)){
+                MailVerifyCode.remove(p.getName());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public String getMailContent(String name,String code){
+        return "<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "<meta charset=\"utf-8\">\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "<h2>"+name+" Your Code:</h2>\n" +
+                "<br>\n" +
+                "<h1>"+code+"</h1>\n" +
+                "</body>\n" +
+                "</html>";
+    }
+
+    public boolean sendMailAsync(String mail,String content,Player player){
+        AsyncTask at = new AsyncTask() {
+            @Override
+            public void onRun() {
+                try {
+                    Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+                    final String SSL_FACTORY = "javax.net.ssl.SSLSocketFactory";
+                    Properties props = new Properties();
+                    props.setProperty("mail.smtp.host",cdata.MailSmtpHost);
+                    props.setProperty("mail.smtp.socketFactory.class", SSL_FACTORY);
+                    props.setProperty("mail.smtp.socketFactory.fallback", "false");
+                    //邮箱发送服务器端口,这里设置为465端口
+                    props.setProperty("mail.smtp.port", cdata.MailSmtpPort);
+                    props.setProperty("mail.smtp.socketFactory.port", cdata.MailSmtpPort);
+                    props.put("mail.smtp.auth", "true");
+                    final String username = cdata.MailUser;
+                    final String password = cdata.MailPasswd;
+                    Session session = Session.getDefaultInstance(props, new Authenticator() {
+                        protected PasswordAuthentication getPasswordAuthentication() {
+                            return new PasswordAuthentication(username, password);
+                        }
+                    });
+
+                    Message msg = new MimeMessage(session);
+                    msg.setFrom(new InternetAddress("dtsmcpe@163.com"));
+                    msg.setRecipient(Message.RecipientType.TO, new InternetAddress(mail));
+                    //Transport transport = session.getTransport();
+                    msg.setSubject("【DawnTribe】Server Network 邮箱地址绑定认证");
+                    msg.setContent(content,"text/html;charset=utf-8");
+                    Transport.send(msg);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    player.sendMessage("发送邮件出现异常,请将此情况反馈给管理员");
+                }
+            }
+        };
+        plugin.getServer().getScheduler().scheduleAsyncTask(plugin,at);
+        plugin.getLogger().warning("end sendmail");
+         return false;
     }
 
 
