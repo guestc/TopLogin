@@ -130,4 +130,17 @@ public class YamlConfig extends DataHelper {
         }
         return 0;
     }
+
+    @Override
+    public String getMail(String user) {
+        Config pconfig = getUserConfig(user);
+        if(pconfig.exists("mail")){
+            try{
+                return pconfig.get("mail").toString();
+            }catch(Exception e){
+                return null;
+            }
+        }
+        return null;
+    }
 }

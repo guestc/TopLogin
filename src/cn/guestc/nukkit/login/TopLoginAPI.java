@@ -38,7 +38,6 @@ public class TopLoginAPI {
 
     public ConfigData cdata;
 
-    private FormWindow Funlogin;
     private FormWindow Floginin;
 
     private HashMap<String,Integer> BanUserInMins = new HashMap<>(),BanCidMins = new HashMap<>(),BanUUIDMins = new HashMap<>();
@@ -87,11 +86,10 @@ public class TopLoginAPI {
         cdata.MailUser = plugin.pconfig.get("mail-user").toString();
         cdata.MailPasswd = plugin.pconfig.get("mail-passwd").toString();
         cdata.MailVerifyBanTime = Integer.parseInt(plugin.pconfig.get("mail-verify-ban-time").toString());
-        cdata.MailVerifyWrongTime = Integer.parseInt(plugin.pconfig.get("mail-verify-ban-time").toString());
+        cdata.MailVerifyWrongTime = Integer.parseInt(plugin.pconfig.get("mail-verify-wrong-time").toString());
         cdata.PasswdWrongTime = Integer.parseInt(plugin.pconfig.get("allow-passwd-wrong-time").toString());
         cdata.PasswdWrongBanTime = Integer.parseInt(plugin.pconfig.get("passwd-wrong-ban").toString());
 
-        Funlogin = new FormWindowSimple(getMessage("login-usage-ui-title"),getMessage("login-usage-ui-text"));
         Floginin = new FormWindowSimple(getMessage("login-in-ui-title"),getMessage("login-in-ui-text"));
     }
 
@@ -134,7 +132,7 @@ public class TopLoginAPI {
                         player.showFormWindow(Floginin);
                     }
                 };
-                plugin.getServer().getScheduler().scheduleDelayedTask(at,20*8);
+                plugin.getServer().getScheduler().scheduleDelayedTask(at,20*3);
             }
         }
     }
@@ -155,10 +153,14 @@ public class TopLoginAPI {
         int time = 1;
         if(WrongMailCode.containsKey(name)){
             int old_time = WrongMailCode.get(name);
-            if(old_time > cdata.MailVerifyWrongTime){
+            if(old_time >= cdata.MailVerifyWrongTime){
                 p.kick(String.format(getMessage("reg-mail-verify-wrong-code-ban"),old_time,cdata.MailVerifyBanTime),true);
                 WrongMailCode.remove(name);
-                BanUserInMins.put(name.toLowerCase(),cdata.MailVerifyBanTime);
+                LoginChainData data = p.getLoginChainData();
+                StringBuilder cid = new StringBuilder();
+                cid.append(data.getClientId());
+                BanCidMins.put(cid.toString(),cdata.MailVerifyBanTime);
+                BanUUIDMins.put(data.getClientUUID().toString(),cdata.MailVerifyBanTime);
                 return;
             }
             time = old_time + 1;
@@ -172,7 +174,7 @@ public class TopLoginAPI {
         if(WrongPasswd.containsKey(name)){
             int old_time = WrongPasswd.get(name);
             if(old_time > cdata.PasswdWrongTime){
-                p.kick(getMessage("login-in-wrong-passwd-ban"),true);
+                p.kick(String.format(getMessage("login-in-wrong-passwd-ban"),cdata.PasswdWrongBanTime),true);
                 WrongPasswd.remove(name);
                 BanUserInMins.put(name.toLowerCase(),cdata.PasswdWrongBanTime);
                 return;
@@ -197,15 +199,6 @@ public class TopLoginAPI {
                     return;
                 }
             }
-        }
-        if(cdata.EnableFormUI){
-            PluginTask<TopLogin> at = new PluginTask<TopLogin>(plugin) {
-                @Override
-                public void onRun(int x) {
-                    player.showFormWindow(Funlogin);
-                }
-            };
-            plugin.getServer().getScheduler().scheduleDelayedTask(at,20*8);
         }
         Message(player,getMessage("login-in-message"));
     }
@@ -312,6 +305,7 @@ public class TopLoginAPI {
 
     public String CheckPasswd(String passwd){
         String remsg =null;
+        plugin.getLogger().warning("pd "+passwd);
         if(passwd.length() > cdata.PasswdMaxLen){
             remsg = getMessage("reg-passwd-max-lenght");
         }
@@ -326,14 +320,14 @@ public class TopLoginAPI {
         return ip;
     }
 
-    public boolean isBan(Player p){
-        if(BanUserInMins.containsKey(p.getName().toLowerCase()))return true;
+    public int isBan(Player p){
+        if(BanUserInMins.containsKey(p.getName().toLowerCase()))return 1;
         LoginChainData data = p.getLoginChainData();
         StringBuilder cid = new StringBuilder();
         cid.append(data.getClientId());
-        if(BanCidMins.containsKey(cid.toString()))return true;
-        if(BanCidMins.containsKey(data.getClientUUID().toString()))return true;
-        return false;
+        if(BanCidMins.containsKey(cid.toString()))return 2;
+        if(BanUUIDMins.containsKey(data.getClientUUID().toString()))return 3;
+        return 0;
     }
 
     public void ReduceMinute(){
@@ -435,7 +429,7 @@ public class TopLoginAPI {
                     msg.setFrom(new InternetAddress("dtsmcpe@163.com"));
                     msg.setRecipient(Message.RecipientType.TO, new InternetAddress(mail));
                     //Transport transport = session.getTransport();
-                    msg.setSubject("【DawnTribe】Server Network 邮箱地址绑定认证");
+                    msg.setSubject("【DawnTribe】Server Network 验证码");
                     msg.setContent(content,"text/html;charset=utf-8");
                     Transport.send(msg);
                 } catch (Exception e) {
@@ -445,7 +439,6 @@ public class TopLoginAPI {
             }
         };
         plugin.getServer().getScheduler().scheduleAsyncTask(plugin,at);
-        plugin.getLogger().warning("end sendmail");
          return false;
     }
 

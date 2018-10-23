@@ -6,6 +6,8 @@
         <element id="file-copy" path="$PROJECT_DIR$/META-INF/MANIFEST.MF" />
       </element>
       <element id="module-output" name="TopLogin_src" />
+      <element id="extracted-dir" path="$USER_HOME$/Downloads/mysql-connector-java-5.1.39-bin.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/Downloads/zzz1999-Login-master/Login-master/mail.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

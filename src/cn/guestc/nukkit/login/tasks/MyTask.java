@@ -11,10 +11,12 @@ public class MyTask extends cn.nukkit.scheduler.PluginTask<TopLogin> {
     @Override
     public void onRun(int i) {
         TopLogin plugin = getOwner();
-        for(Player p : plugin.getServer().getOnlinePlayers().values()){
-            if(!plugin.api.isLogin(p.getName())){
-                if(plugin.dataHelper.IsRegister(p.getName())){
-                    plugin.api.Message(p,plugin.api.getMessage("login-in-message"));
+        if(plugin.api.cdata.MessageType != 1){
+            for(Player p : plugin.getServer().getOnlinePlayers().values()){
+                if(!plugin.api.isLogin(p.getName())){
+                    if(plugin.dataHelper.IsRegister(p.getName())){
+                        plugin.api.Message(p,plugin.api.getMessage("login-in-message"));
+                    }
                 }
             }
         }

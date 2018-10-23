@@ -242,4 +242,18 @@ public class MysqlConfig extends DataHelper{
         }
         return true;
     }
+
+    @Override
+    public String getMail(String user) {
+        try{
+            ResultSet rs = statement.executeQuery("select mail from "+tb_userinfo+
+                    " where uid=(select uid from "+tb_uidlist+
+                    " where name='"+user.toLowerCase()+"');");
+            if(!rs.next()) return null;
+            return rs.getString("mail");
+        }catch(Exception e){
+            plugin.getLogger().warning("mysql getMail wrong: "+e.getMessage());
+            return null;
+        }
+    }
 }

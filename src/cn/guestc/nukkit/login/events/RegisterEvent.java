@@ -8,13 +8,20 @@ import cn.nukkit.api.API;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
+import cn.nukkit.event.entity.EntityDespawnEvent;
+import cn.nukkit.event.entity.EntityEvent;
+import cn.nukkit.event.entity.EntityRegainHealthEvent;
 import cn.nukkit.event.player.*;
+import cn.nukkit.event.server.DataPacketReceiveEvent;
 import cn.nukkit.form.response.FormResponse;
 import cn.nukkit.form.window.FormWindow;
 import cn.nukkit.form.window.FormWindowSimple;
+import cn.nukkit.network.protocol.DataPacket;
+import cn.nukkit.network.protocol.SetLocalPlayerAsInitializedPacket;
 import cn.nukkit.scheduler.AsyncTask;
 import cn.nukkit.scheduler.PluginTask;
 
+import javax.swing.text.html.parser.Entity;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -24,6 +31,8 @@ public class RegisterEvent implements Listener {
     private TopLoginAPI API;
 
     private FormWindow Funreg;
+
+    private FormWindow Funlogin;
 
 
     public enum RegisterState{
@@ -38,10 +47,13 @@ public class RegisterEvent implements Listener {
 
     private HashMap<String, UserData> reging = new HashMap<>();
 
+    private  HashMap<String,String> login_mail = new HashMap<>();
+
     public RegisterEvent(TopLogin toplogin){
         plugin = toplogin;
         API = plugin.api;
         Funreg = new FormWindowSimple(API.getMessage("unreg-usage-ui-title"),API.getMessage("unreg-usage-ui-text"));
+        Funlogin = new FormWindowSimple(API.getMessage("login-usage-ui-title"),API.getMessage("login-usage-ui-text"));
     }
 
     @EventHandler(priority = EventPriority.HIGH,ignoreCancelled = false)
@@ -49,15 +61,6 @@ public class RegisterEvent implements Listener {
         Player player = event.getPlayer();
         String name = player.getName();
         if(!plugin.dataHelper.IsRegister(name)){
-            if(API.cdata.EnableFormUI){
-                PluginTask<TopLogin> at = new PluginTask<TopLogin>(plugin) {
-                    @Override
-                    public void onRun(int x) {
-                        player.showFormWindow(Funreg);
-                    }
-                };
-                plugin.getServer().getScheduler().scheduleDelayedTask(at,20*8);
-            }
             API.Message(player,API.getMessage("reg-comfirm-name"),(byte) 1);
         }else{
             API.AutoLogin(event.getPlayer());
@@ -75,15 +78,18 @@ public class RegisterEvent implements Listener {
         if(reging.containsKey(name)){
             reging.remove(name);
         }
+        if(login_mail.containsKey(name)){
+            login_mail.remove(name);
+        }
     }
     @EventHandler(priority=EventPriority.HIGH,ignoreCancelled=false)
     public void onCommandPre(PlayerCommandPreprocessEvent event){
         Player player = event.getPlayer();
         String name = player.getName();
+        String msg = event.getMessage();
         if(!API.isLogin(name)){
             if(API.cdata.LoginType.equals("command")){
                 if(!registers.containsKey(name) && plugin.dataHelper.IsRegister(name)){
-                    String msg = event.getMessage();
                     if(msg.substring(0,"/login ".length()).equals("/login ")){
                         String passwd = TopLoginAPI.getPasswdFormStr(msg.replace("/login ",""));
                         if(plugin.dataHelper.VerifyPasswd(player.getName(),passwd)){
@@ -96,6 +102,22 @@ public class RegisterEvent implements Listener {
                         }
                     }
                 }
+            }
+            if(msg.substring(0,"/login-mail".length()).equals("/login-mail")){
+                if(!login_mail.containsKey(name)){
+                    String code = API.RandCode(player);
+                    String mail = plugin.dataHelper.getMail(name);
+                    if(mail != null){
+                        API.sendMailAsync(mail,API.getMailContent(name,code),player);
+                        login_mail.put(name,code);
+                        API.Message(player,String.format(API.getMessage("login-in-with-mail-send"),mail));
+                    }else{
+                        API.Message(player,API.getMessage("login-in-with-mail-no-mail"));
+                    }
+                }else{
+                    API.Message(player,API.getMessage("login-in-with-mail-usage"));
+                }
+
             }
             event.setCancelled(true);
         }
@@ -154,7 +176,7 @@ public class RegisterEvent implements Listener {
                     }
                     UserData ud2 = reging.get(name);
                     String passwd = TopLoginAPI.getPasswdFormStr(ud2.passwd);
-                    plugin.dataHelper.AddUser(name,passwd,msg);
+                    plugin.dataHelper.AddUser(name,passwd,ud2.mail);
                     API.Message(player,API.getMessage("reg-success"),(byte) 1);
                     API.Message(player,String.format(API.getMessage("reg-success-return-msg"),name,ud2.passwd,ud2.mail),(byte) 1);
                     API.LoginIn(player);
@@ -191,13 +213,23 @@ public class RegisterEvent implements Listener {
             event.setCancelled(true);
         }else{
             if(!API.isLogin(name)){
-                if(API.cdata.LoginType.equals("text")){
+                if(login_mail.containsKey(name)){
+                    if(msg.equals(login_mail.get(name))){
+                        API.LoginIn(player);
+                        API.Message(player,API.getMessage("login-in-success"));
+                        login_mail.remove(name);
+                    }else{
+                        API.Message(player,API.getMessage("login-in-with-mail-wrong-code"));
+                        API.WrongMailVerifyCode(player);
+                    }
+                }else if(API.cdata.LoginType.equals("text")){
                     if(plugin.dataHelper.VerifyPasswd(name,TopLoginAPI.getPasswdFormStr(msg))){
                         API.LoginIn(player);
                         API.Message(player,API.getMessage("login-in-success"));
                     }else{
                         API.Message(player,API.getMessage("login-in-wrong-passwd"));
                         API.Message(player,API.getMessage("login-in-message"));
+                        API.WrongPasswd(player);
                     }
                 }
                 event.setCancelled(true);
@@ -209,8 +241,13 @@ public class RegisterEvent implements Listener {
     public void PreLogin(PlayerPreLoginEvent event){
         if(!event.isCancelled()){
             String name = event.getPlayer().getName();
-            if(API.isBan(event.getPlayer())){
-                event.setKickMessage(API.getMessage("time-banned"));
+            int ban = API.isBan(event.getPlayer());
+            if(ban != 0){
+                if(ban == 1){
+                    event.setKickMessage(API.getMessage("time-username-banned"));
+                }else{
+                    event.setKickMessage(API.getMessage("time-device-banned"));
+                }
                 event.setCancelled(true);
                 return;
             }
@@ -234,6 +271,40 @@ public class RegisterEvent implements Listener {
                     return;
                 }
                 registers.put(name,RegisterState.confirmName);
+            }
+        }
+    }
+
+    @EventHandler(priority=EventPriority.HIGH,ignoreCancelled=false)
+    public void onLoadDone(DataPacketReceiveEvent event){
+        if(event.getPacket() instanceof SetLocalPlayerAsInitializedPacket){
+            showForm(event.getPlayer());
+        }
+    }
+
+    public void showForm(Player p){
+        String name = p.getName();
+        if(!plugin.dataHelper.IsRegister(name)){
+            if(API.cdata.EnableFormUI){
+                AsyncTask at = new AsyncTask() {
+                    @Override
+                    public void onRun() {
+                        p.showFormWindow(Funreg);
+                    }
+                };
+                plugin.getServer().getScheduler().scheduleAsyncTask(plugin,at);
+            }
+        }else{
+            if(!API.isLogin(name)){
+                if(API.cdata.EnableFormUI){
+                    AsyncTask at = new AsyncTask() {
+                        @Override
+                        public void onRun() {
+                            p.showFormWindow(Funlogin);
+                        }
+                    };
+                    plugin.getServer().getScheduler().scheduleAsyncTask(plugin,at);
+                }
             }
         }
     }

@@ -37,9 +37,6 @@ public class TopLogin extends PluginBase {
         getServer().getScheduler().scheduleRepeatingTask(new MyTask(this),3*20);
         getServer().getScheduler().scheduleRepeatingTask(new MinuteTask(this),60*20);
 
-        api.sendMailAsync("liu1104392414@gmail.com",api.getMailContent("fuck","google mail"));
-        api.sendMailAsync("2749643747@qq.com",api.getMailContent("fuck","qqmail"));
-
     }
 
     @Override
@@ -91,7 +88,7 @@ public class TopLogin extends PluginBase {
                     sender.sendMessage(cmd.getUsage());
                     return true;
                 }
-                String newpasswd = TopLoginAPI.getPasswdFormStr(TopLoginAPI.ArrayToString(args));
+                String newpasswd = TopLoginAPI.ArrayToString(args);
                 String msg = api.CheckPasswd(newpasswd);
                 if(msg != null){
                     api.Message((Player) sender,msg);

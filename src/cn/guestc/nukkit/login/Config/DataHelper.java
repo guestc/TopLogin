@@ -37,6 +37,8 @@ public abstract class DataHelper {
 
     abstract public long getCid(String user);
 
+    abstract public String getMail(String user);
+
     abstract public String getUUID(String user);
 
     abstract public String getDevice(String user);
