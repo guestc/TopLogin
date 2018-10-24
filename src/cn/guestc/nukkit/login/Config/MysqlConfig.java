@@ -22,7 +22,7 @@ public class MysqlConfig extends DataHelper{
 
     @Override
     public void init() {
-        type =Type.mysql;
+        type = Type.mysql;
         tb_userinfo = DB_prefix+"_userinfo";
         tb_uidlist = DB_prefix+"_uidlist";
         tb_multiserver = DB_prefix+"_multiserver";
@@ -238,7 +238,7 @@ public class MysqlConfig extends DataHelper{
             ResultSet rs = statement.executeQuery(sql);
             return rs.next();
         }catch(Exception e){
-            plugin.getLogger().warning("mysql getUUID wrong: "+e.getMessage());
+            plugin.getLogger().warning("mysql datetime wrong: "+e.getMessage());
         }
         return true;
     }

@@ -1,5 +1,6 @@
 package cn.guestc.nukkit.login;
 
+import cn.guestc.nukkit.login.Config.DataHelper;
 import cn.guestc.nukkit.login.Config.MysqlConfig;
 import cn.guestc.nukkit.login.utils.ConfigData;
 import cn.nukkit.Player;
@@ -198,6 +199,11 @@ public class TopLoginAPI {
                     }
                     return;
                 }
+            }
+        }
+        if(plugin.dataHelper.type == DataHelper.Type.mysql){
+            if(((MysqlConfig)plugin.dataHelper).isLogin(user)){
+                LoginIn(player);
             }
         }
         Message(player,getMessage("login-in-message"));
